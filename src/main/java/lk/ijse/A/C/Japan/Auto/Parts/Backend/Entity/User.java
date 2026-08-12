@@ -18,12 +18,9 @@ public class User {
     private String userId;
     private String userName;
     private String password;
+    @Enumerated(EnumType.STRING)
     private Role role;
+    @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
-
-    @PrePersist
-    public void generateCustomerId() {
-        this.userId = "USR" + String.format("%04d", this.id);
-    }
 
 }
