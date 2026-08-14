@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String userId;
+    private Long userId;
+    private String userStringId;
     private String userName;
     private String password;
     @Enumerated(EnumType.STRING)
@@ -23,4 +23,11 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
 
+    public User(String userStringId, String userName, String password, Role role, UserStatus userStatus) {
+        this.userStringId = userStringId;
+        this.userName = userName;
+        this.password = password;
+        this.role = role;
+        this.userStatus = userStatus;
+    }
 }
