@@ -19,15 +19,15 @@ public class User {
     private String userName;
     private String password;
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private Role userRole;
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
 
-    public User(String userStringId, String userName, String password, Role role, UserStatus userStatus) {
+    public User(String userStringId, String userName, String password, Role userrole, UserStatus userStatus) {
         this.userStringId = userStringId;
         this.userName = userName;
         this.password = password;
-        this.role = role;
+        this.userRole = userrole;
         this.userStatus = userStatus;
     }
 }

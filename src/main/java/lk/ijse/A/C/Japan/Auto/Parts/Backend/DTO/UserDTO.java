@@ -1,5 +1,29 @@
 package lk.ijse.A.C.Japan.Auto.Parts.Backend.DTO;
 
-public class UserDTO {
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import lk.ijse.A.C.Japan.Auto.Parts.Backend.Enumaration.Role;
+import lk.ijse.A.C.Japan.Auto.Parts.Backend.Enumaration.UserStatus;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserDTO {
+    private Long userId;
+    private String userStringId;
+    private String userName;
+    private String password;
+    private Role userRole;
+    private UserStatus userStatus;
+
+    public UserDTO(String userStringId, String userName, String password, Role userrole, UserStatus userStatus) {
+        this.userStringId = userStringId;
+        this.userName = userName;
+        this.password = password;
+        this.userRole = userrole;
+        this.userStatus = userStatus;
+    }
 }
