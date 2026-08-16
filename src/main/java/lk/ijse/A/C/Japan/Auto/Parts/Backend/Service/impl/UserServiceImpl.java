@@ -37,7 +37,12 @@ public class UserServiceImpl implements UserService {
         return new UserDTO(saveUser.getUserStringId(), saveUser.getUserName(), saveUser.getPassword(), saveUser.getUserRole(), saveUser.getUserStatus());
     }
 
-    public void generateUserId() {
-        // Implement the logic to generate a unique user ID
+    public String generateUserId() {
+        log.info("Generating user ID");
+        String lastUserId = userRepository.findLastUserId();
+        String newUserId = "U001"; // Default ID if no users exist
+
+        log.info("Generated user ID: {}", newUserId);
+        return newUserId;
     }
 }
