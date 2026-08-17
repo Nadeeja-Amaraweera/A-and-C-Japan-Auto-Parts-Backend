@@ -15,15 +15,17 @@ public class UserDTO {
     private Long userId;
     private String userStringId;
     private String userName;
-    private String password;
+    private String userEmail;
+    private String userPassword;
     private Role userRole;
     private UserStatus userStatus;
 
-    public UserDTO(String userStringId, String userName, String password, Role userrole, UserStatus userStatus) {
+    public UserDTO(String userStringId, String userName, String userEmail, String userPassword, Role userRole, UserStatus userStatus) {
         this.userStringId = userStringId;
         this.userName = userName;
-        this.password = password;
-        this.userRole = userrole;
+        this.userEmail = userEmail;
+        this.userPassword = userPassword;
+        this.userRole = userRole;
         this.userStatus = userStatus;
     }
 }

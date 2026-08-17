@@ -17,17 +17,19 @@ public class User {
     private Long userId;
     private String userStringId;
     private String userName;
-    private String password;
+    private String userPassword;
     @Enumerated(EnumType.STRING)
     private Role userRole;
+    private String userEmail;
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
 
-    public User(String userStringId, String userName, String password, Role userrole, UserStatus userStatus) {
+    public User(String userStringId, String userName, String userPassword, Role userRole, String userEmail, UserStatus userStatus) {
         this.userStringId = userStringId;
         this.userName = userName;
-        this.password = password;
-        this.userRole = userrole;
+        this.userPassword = userPassword;
+        this.userRole = userRole;
+        this.userEmail = userEmail;
         this.userStatus = userStatus;
     }
 }
