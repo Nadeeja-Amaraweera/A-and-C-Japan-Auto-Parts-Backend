@@ -32,13 +32,19 @@ public class UserServiceImpl implements UserService {
         user.setUserStringId(generateUserId());
         user.setUserName(userDTO.getUserName());
         user.setUserPassword(userDTO.getUserPassword());
-        user.setUserRole(userDTO.getUserRole());
+        user.setUserRole(Role.CUSTOMER);
         user.setUserEmail(userDTO.getUserEmail());
+        user.setUserPhone(userDTO.getUserPhone());
         user.setUserStatus(UserStatus.ACTIVE);
 
         User saveUser = userRepository.save(user);
         log.info("User saved successfully: {}", saveUser);
-        return new UserDTO(saveUser.getUserStringId(), saveUser.getUserName(), saveUser.getUserEmail(), saveUser.getUserPassword(), saveUser.getUserRole(), saveUser.getUserStatus());
+        return new UserDTO(saveUser.getUserStringId(), saveUser.getUserName(), saveUser.getUserEmail(), saveUser.getUserPassword(), saveUser.getUserPhone(), saveUser.getUserRole(), saveUser.getUserStatus());
+    }
+
+    @Override
+    public UserDTO getUserDetails(String email, String password) {
+        return null;
     }
 
     public String generateUserId() {
