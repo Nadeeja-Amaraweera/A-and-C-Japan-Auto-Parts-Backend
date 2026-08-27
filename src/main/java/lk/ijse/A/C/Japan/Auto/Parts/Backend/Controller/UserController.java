@@ -12,7 +12,7 @@ import static lk.ijse.A.C.Japan.Auto.Parts.Backend.Constant.ResponseStatusCode.O
 
 @RestController
 @RequestMapping("/api/v1/auth")
-@CrossOrigin
+@CrossOrigin(origins = {"http://127.0.0.1:5500", "http://localhost:5500"})
 @RequiredArgsConstructor
 public class UserController {
 
@@ -21,6 +21,9 @@ public class UserController {
     @PostMapping(value = "/register",produces = MediaType.APPLICATION_JSON_VALUE)
     public CommonResponse registerUser(@RequestBody UserDTO userDTO) {
         UserDTO saveUser = userService.saveUser(userDTO);
+        System.out.println("📝 2. saveUser: " + saveUser);
+        System.out.println("📝 3. saveUser ID: " + (saveUser != null ? saveUser.getUserId() : "null"));
+        System.out.println("📝 4. saveUser Name: " + (saveUser != null ? saveUser.getUserName() : "null"));
         return new CommonResponse(OPERATION_SUCCESS,saveUser,SUCCESS_MESSAGE);
     }
 }

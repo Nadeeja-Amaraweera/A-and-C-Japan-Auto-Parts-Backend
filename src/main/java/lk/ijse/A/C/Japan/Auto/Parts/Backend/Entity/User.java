@@ -24,14 +24,5 @@ public class User {
     private String userPhone;
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
-
-    public User(String userStringId, String userName, String userPassword, Role userRole, String userEmail, String userPhone, UserStatus userStatus) {
-        this.userStringId = userStringId;
-        this.userName = userName;
-        this.userPassword = userPassword;
-        this.userRole = userRole;
-        this.userEmail = userEmail;
-        this.userPhone = userPhone;
-        this.userStatus = userStatus;
-    }
+    private boolean supplierApprovalStatus;
 }

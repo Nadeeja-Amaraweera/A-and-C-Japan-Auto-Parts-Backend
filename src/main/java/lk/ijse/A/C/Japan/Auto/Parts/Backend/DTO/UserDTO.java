@@ -20,14 +20,37 @@ public class UserDTO {
     private String userPhone;
     private Role userRole;
     private UserStatus userStatus;
+    private boolean supplierApprovalStatus;
 
     public UserDTO(String userStringId, String userName, String userEmail, String userPassword, String userPhone, Role userRole, UserStatus userStatus) {
         this.userStringId = userStringId;
         this.userName = userName;
         this.userEmail = userEmail;
         this.userPassword = userPassword;
+        this.userPhone = userPhone;
+        this.userRole = userRole;
+        this.userStatus = userStatus;
+    }
+
+    public UserDTO(String userStringId, String userName, String userEmail, String userPassword, String userPhone, Role userRole, UserStatus userStatus, boolean supplierApprovalStatus) {
+        this.userStringId = userStringId;
+        this.userName = userName;
+        this.userEmail = userEmail;
+        this.userPassword = userPassword;
         this.userRole = userRole;
         this.userPhone = userPhone;
+        this.userStatus = userStatus;
+        this.supplierApprovalStatus = supplierApprovalStatus;
+    }
+
+    public UserDTO(Long userId, String userStringId, String userName, String userEmail, String userPassword, String userPhone, Role userRole, UserStatus userStatus) {
+        this.userId = userId;
+        this.userStringId = userStringId;
+        this.userName = userName;
+        this.userEmail = userEmail;
+        this.userPassword = userPassword;
+        this.userPhone = userPhone;
+        this.userRole = userRole;
         this.userStatus = userStatus;
     }
 }

@@ -24,11 +24,17 @@ public class UserServiceImpl implements UserService {
     public UserDTO saveUser(UserDTO userDTO) {
         log.info("Saving user: {}", userDTO);
 
-        if (userDTO.getUserRole().equals("")) {
+        if (userDTO.getUserRole() == null) {
+            System.out.println("⚠️ UserRole is null! Setting default role: USER");
+            userDTO.setUserRole(Role.CUSTOMER);  // Default role
+        }
+
+        if (userDTO.getUserRole().equals(Role.ADMIN)) {
             throw new CustomeException(404, "Cannot create user with ADMIN role");
         }
 
         User user = new User();
+        user.setUserId(userDTO.getUserId());
         user.setUserStringId(generateUserId());
         user.setUserName(userDTO.getUserName());
         user.setUserPassword(userDTO.getUserPassword());
@@ -39,7 +45,7 @@ public class UserServiceImpl implements UserService {
 
         User saveUser = userRepository.save(user);
         log.info("User saved successfully: {}", saveUser);
-        return new UserDTO(saveUser.getUserStringId(), saveUser.getUserName(), saveUser.getUserEmail(), saveUser.getUserPassword(), saveUser.getUserPhone(), saveUser.getUserRole(), saveUser.getUserStatus());
+        return new UserDTO(saveUser.getUserId(), saveUser.getUserStringId(), saveUser.getUserName(), saveUser.getUserEmail(), saveUser.getUserPassword(), saveUser.getUserPhone(), saveUser.getUserRole(), saveUser.getUserStatus());
     }
 
     @Override
