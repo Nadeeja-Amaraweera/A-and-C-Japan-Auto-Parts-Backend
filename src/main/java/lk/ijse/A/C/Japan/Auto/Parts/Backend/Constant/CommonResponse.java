@@ -16,4 +16,10 @@ public class CommonResponse {
         this.status = status;
         this.message = message;
     }
+
+    public CommonResponse(String message) {
+        this.status = 1;
+        this.body = null;
+        this.message = message;
+    }
 }

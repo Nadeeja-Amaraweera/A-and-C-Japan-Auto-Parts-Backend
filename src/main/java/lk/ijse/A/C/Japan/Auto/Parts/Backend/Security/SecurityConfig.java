@@ -1,5 +1,7 @@
 package lk.ijse.A.C.Japan.Auto.Parts.Backend.Security;
 
+import jakarta.servlet.http.HttpServletResponse;
+import lk.ijse.A.C.Japan.Auto.Parts.Backend.Constant.CommonResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.Arrays;
 
@@ -31,17 +34,65 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+
                 .csrf(csrf -> csrf.disable())
+
+
+                .exceptionHandling(exceptions -> exceptions
+                        // Handle authentication errors (401)
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setContentType("application/json");
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+                            CommonResponse errorResponse = new CommonResponse();
+                            errorResponse.setStatus(1);
+                            errorResponse.setMessage("Authentication required: " + authException.getMessage());
+                            errorResponse.setBody(null);
+
+                            ObjectMapper mapper = new ObjectMapper();
+                            response.getWriter().write(mapper.writeValueAsString(errorResponse));
+                        })
+                        // Handle access denied errors (403)
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setContentType("application/json");
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+
+                            CommonResponse errorResponse = new CommonResponse();
+                            errorResponse.setStatus(1);
+                            errorResponse.setMessage("Access denied: " + accessDeniedException.getMessage());
+                            errorResponse.setBody(null);
+
+                            ObjectMapper mapper = new ObjectMapper();
+                            response.getWriter().write(mapper.writeValueAsString(errorResponse));
+                        })
+                )
+
+                // Authorization Rules
                 .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers(HttpMethod.GET, "/v1/api/users/get-all").permitAll()
+                        // Public endpoints
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
-//                        .requestMatchers(HttpMethod.PUT, "/v1/api/users/edit").hasRole("ADMIN")
-//                        .requestMatchers(HttpMethod.POST, "/v1/api/users/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+
+                        // Admin only
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+
+                        // Authenticated users only
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider()) // Add this
+
+                // Session Management
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
+                //  Provider
+                .authenticationProvider(authenticationProvider())
+
+                // JWT Filter
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

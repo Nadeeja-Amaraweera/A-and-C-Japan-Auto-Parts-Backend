@@ -10,4 +10,10 @@ import lombok.NoArgsConstructor;
 public class CustomeException extends RuntimeException {
     private int status;
     private String message;
+
+    public CustomeException(String message) {
+        super(message);
+        this.status = 400;
+        this.message = message;
+    }
 }

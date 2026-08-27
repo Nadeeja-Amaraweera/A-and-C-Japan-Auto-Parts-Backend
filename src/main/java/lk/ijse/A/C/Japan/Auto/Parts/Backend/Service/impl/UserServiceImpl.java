@@ -10,6 +10,8 @@ import lk.ijse.A.C.Japan.Auto.Parts.Backend.Service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService {
@@ -25,7 +27,7 @@ public class UserServiceImpl implements UserService {
         log.info("Saving user: {}", userDTO);
 
         if (userDTO.getUserRole() == null) {
-            System.out.println("⚠️ UserRole is null! Setting default role: USER");
+            System.out.println("UserRole is null! Setting default role: USER");
             userDTO.setUserRole(Role.CUSTOMER);  // Default role
         }
 
@@ -33,8 +35,12 @@ public class UserServiceImpl implements UserService {
             throw new CustomeException(404, "Cannot create user with ADMIN role");
         }
 
+        if (isEmailExists(userDTO.getUserEmail())) {
+            throw new CustomeException(409, "User with email already exists");
+        }
+
         User user = new User();
-        user.setUserId(userDTO.getUserId());
+//        user.setUserId(userDTO.getUserId());
         user.setUserStringId(generateUserId());
         user.setUserName(userDTO.getUserName());
         user.setUserPassword(userDTO.getUserPassword());
@@ -45,11 +51,16 @@ public class UserServiceImpl implements UserService {
 
         User saveUser = userRepository.save(user);
         log.info("User saved successfully: {}", saveUser);
-        return new UserDTO(saveUser.getUserId(), saveUser.getUserStringId(), saveUser.getUserName(), saveUser.getUserEmail(), saveUser.getUserPassword(), saveUser.getUserPhone(), saveUser.getUserRole(), saveUser.getUserStatus());
+        return new UserDTO( saveUser.getUserStringId(), saveUser.getUserName(), saveUser.getUserEmail(), saveUser.getUserPassword(), saveUser.getUserPhone(), saveUser.getUserRole(), saveUser.getUserStatus());
     }
 
     @Override
     public UserDTO getUserDetails(String email, String password) {
+        Optional<User> optionalUser = userRepository.findByUserEmailAndUserPassword(email, password);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            return new UserDTO(user.getUserId(), user.getUserStringId(), user.getUserName(), user.getUserEmail(), user.getUserPassword(), user.getUserPhone(), user.getUserRole(), user.getUserStatus());
+        }
         return null;
     }
 
@@ -66,5 +77,9 @@ public class UserServiceImpl implements UserService {
             newUserId = String.format("U%03d", newId);
         }
         return newUserId;
+    }
+
+    public boolean isEmailExists(String email) {
+        return userRepository.countByUserEmail(email) > 0;
     }
 }
