@@ -21,6 +21,12 @@ public class AppExceptionHandler {
         // Get status code from exception
         int statusCode = ex.getStatus();
 
+        System.out.println("========================================");
+        System.out.println("❌ CUSTOM EXCEPTION CAUGHT!");
+        System.out.println("Status Code: " + statusCode);
+        System.out.println("Message: " + ex.getMessage());
+        System.out.println("========================================");
+        ex.printStackTrace();
         // Create error response
         CommonResponse response = new CommonResponse();
         response.setStatus(1);  // Error

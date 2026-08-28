@@ -8,6 +8,8 @@ import lk.ijse.A.C.Japan.Auto.Parts.Backend.Exception.CustomeException;
 import lk.ijse.A.C.Japan.Auto.Parts.Backend.Repository.UserRepository;
 import lk.ijse.A.C.Japan.Auto.Parts.Backend.Service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -15,6 +17,9 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService {
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private final UserRepository userRepository;
 
@@ -43,7 +48,7 @@ public class UserServiceImpl implements UserService {
 //        user.setUserId(userDTO.getUserId());
         user.setUserStringId(generateUserId());
         user.setUserName(userDTO.getUserName());
-        user.setUserPassword(userDTO.getUserPassword());
+        user.setUserPassword(passwordEncoder.encode(userDTO.getUserPassword()));
         user.setUserRole(Role.CUSTOMER);
         user.setUserEmail(userDTO.getUserEmail());
         user.setUserPhone(userDTO.getUserPhone());
@@ -51,17 +56,33 @@ public class UserServiceImpl implements UserService {
 
         User saveUser = userRepository.save(user);
         log.info("User saved successfully: {}", saveUser);
-        return new UserDTO( saveUser.getUserStringId(), saveUser.getUserName(), saveUser.getUserEmail(), saveUser.getUserPassword(), saveUser.getUserPhone(), saveUser.getUserRole(), saveUser.getUserStatus());
+        return new UserDTO( saveUser.getUserStringId(), saveUser.getUserName(), saveUser.getUserEmail(), null, saveUser.getUserPhone(), saveUser.getUserRole(), saveUser.getUserStatus());
     }
 
     @Override
     public UserDTO getUserDetails(String email, String password) {
-        Optional<User> optionalUser = userRepository.findByUserEmailAndUserPassword(email, password);
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            return new UserDTO(user.getUserId(), user.getUserStringId(), user.getUserName(), user.getUserEmail(), user.getUserPassword(), user.getUserPhone(), user.getUserRole(), user.getUserStatus());
+        Optional<User> optionalUser = userRepository.findByUserEmail(email);
+
+        if (optionalUser.isEmpty()) {
+            throw new CustomeException(403, "Invalid email or password");
         }
-        return null;
+
+        User user = optionalUser.get();
+
+        if (!passwordEncoder.matches(password, user.getUserPassword())) {
+            throw new CustomeException(403, "Invalid email or password");
+        }
+
+        return new UserDTO(
+                user.getUserId(),
+                user.getUserStringId(),
+                user.getUserName(),
+                user.getUserEmail(),
+                null,
+                user.getUserPhone(),
+                user.getUserRole(),
+                user.getUserStatus()
+        );
     }
 
     public String generateUserId() {
