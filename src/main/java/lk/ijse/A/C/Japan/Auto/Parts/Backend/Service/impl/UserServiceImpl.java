@@ -52,11 +52,12 @@ public class UserServiceImpl implements UserService {
         user.setUserRole(Role.CUSTOMER);
         user.setUserEmail(userDTO.getUserEmail());
         user.setUserPhone(userDTO.getUserPhone());
+        user.setUserAddress(userDTO.getUserAddress());
         user.setUserStatus(UserStatus.ACTIVE);
 
         User saveUser = userRepository.save(user);
         log.info("User saved successfully: {}", saveUser);
-        return new UserDTO( saveUser.getUserStringId(), saveUser.getUserName(), saveUser.getUserEmail(), null, saveUser.getUserPhone(), saveUser.getUserRole(), saveUser.getUserStatus());
+        return new UserDTO( saveUser.getUserStringId(), saveUser.getUserName(), saveUser.getUserEmail(), null, saveUser.getUserPhone(), saveUser.getUserAddress(), saveUser.getUserRole(), saveUser.getUserStatus());
     }
 
     @Override
@@ -80,6 +81,7 @@ public class UserServiceImpl implements UserService {
                 user.getUserEmail(),
                 null,
                 user.getUserPhone(),
+                user.getUserAddress(),
                 user.getUserRole(),
                 user.getUserStatus()
         );

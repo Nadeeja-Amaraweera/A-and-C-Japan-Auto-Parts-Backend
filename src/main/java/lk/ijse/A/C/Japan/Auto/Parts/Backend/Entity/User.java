@@ -22,6 +22,7 @@ public class User {
     private Role userRole;
     private String userEmail;
     private String userPhone;
+    private String userAddress;
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
     private boolean supplierApprovalStatus;

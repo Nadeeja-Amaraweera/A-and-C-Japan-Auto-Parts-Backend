@@ -35,6 +35,7 @@ public class UserController {
         String token = jwtUtil.generateToken(userDetails);
         UserDataDTO userDataDTO = new UserDataDTO();
         userDataDTO.setUserId(userDetails.getUserId());
+        userDataDTO.setUserName(userDetails.getUserName());
         userDataDTO.setToken(token);
         return new CommonResponse(0, userDataDTO, "JWT Token generated successfully");
     }
