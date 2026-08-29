@@ -22,6 +22,7 @@ public class UserController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
 
+
     @PostMapping(value = "/register",produces = MediaType.APPLICATION_JSON_VALUE)
     public CommonResponse registerUser(@RequestBody UserDTO userDTO) {
         UserDTO saveUser = userService.saveUser(userDTO);
