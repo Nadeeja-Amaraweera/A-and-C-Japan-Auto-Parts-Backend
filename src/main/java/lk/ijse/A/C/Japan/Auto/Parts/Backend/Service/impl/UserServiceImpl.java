@@ -53,11 +53,12 @@ public class UserServiceImpl implements UserService {
         user.setUserEmail(userDTO.getUserEmail());
         user.setUserPhone(userDTO.getUserPhone());
         user.setUserAddress(userDTO.getUserAddress());
+        user.setSupplierApprovalStatus(false);
         user.setUserStatus(UserStatus.ACTIVE);
 
         User saveUser = userRepository.save(user);
         log.info("User saved successfully: {}", saveUser);
-        return new UserDTO( saveUser.getUserStringId(), saveUser.getUserName(), saveUser.getUserEmail(), null, saveUser.getUserPhone(), saveUser.getUserAddress(), saveUser.getUserRole(), saveUser.getUserStatus());
+        return new UserDTO( saveUser.getUserStringId(), saveUser.getUserName(), saveUser.getUserEmail(), null, saveUser.getUserPhone(), saveUser.getUserAddress(), saveUser.getUserRole(), saveUser.getSupplierApprovalStatus(), saveUser.getUserStatus());
     }
 
     @Override
@@ -83,8 +84,26 @@ public class UserServiceImpl implements UserService {
                 user.getUserPhone(),
                 user.getUserAddress(),
                 user.getUserRole(),
+                user.getSupplierApprovalStatus(),
                 user.getUserStatus()
         );
+    }
+
+    @Override
+    public UserDTO getUserByUsername(String username) {
+        Optional<User> optionalUser = userRepository.findByUserName(username);
+
+        // ✅ 2. Check if user exists
+        if (optionalUser.isEmpty()) {
+            System.out.println("❌ User not found with username: " + username);
+            return null;
+        }
+
+        // ✅ 3. Get user
+        User user = optionalUser.get();
+
+        // ✅ 4. Convert to DTO
+        return convertToDTO(user);
     }
 
     public String generateUserId() {
@@ -104,5 +123,19 @@ public class UserServiceImpl implements UserService {
 
     public boolean isEmailExists(String email) {
         return userRepository.countByUserEmail(email) > 0;
+    }
+
+
+    private UserDTO convertToDTO(User user) {
+        UserDTO dto = new UserDTO();
+        dto.setUserId(user.getUserId());
+        dto.setUserStringId(user.getUserStringId());
+        dto.setUserName(user.getUserName());
+        dto.setUserEmail(user.getUserEmail());
+        dto.setUserPhone(user.getUserPhone());
+        dto.setUserRole(user.getUserRole());
+        dto.setUserStatus(user.getUserStatus());
+        dto.setSupplierApprovalStatus(user.getSupplierApprovalStatus());
+        return dto;
     }
 }

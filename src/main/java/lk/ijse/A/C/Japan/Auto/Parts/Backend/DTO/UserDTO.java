@@ -20,9 +20,10 @@ public class UserDTO {
     private String userPhone;
     private String userAddress;
     private Role userRole;
+    private Boolean supplierApprovalStatus;
     private UserStatus userStatus;
 
-    public UserDTO(String userStringId, String userName, String userEmail, String userPassword, String userPhone,String userAddress, Role userRole, UserStatus userStatus) {
+    public UserDTO(String userStringId, String userName, String userEmail, String userPassword, String userPhone, String userAddress, Role userRole, Boolean supplierApprovalStatus, UserStatus userStatus) {
         this.userStringId = userStringId;
         this.userName = userName;
         this.userEmail = userEmail;
@@ -30,6 +31,7 @@ public class UserDTO {
         this.userPhone = userPhone;
         this.userAddress = userAddress;
         this.userRole = userRole;
+        this.supplierApprovalStatus = supplierApprovalStatus;
         this.userStatus = userStatus;
     }
 }
