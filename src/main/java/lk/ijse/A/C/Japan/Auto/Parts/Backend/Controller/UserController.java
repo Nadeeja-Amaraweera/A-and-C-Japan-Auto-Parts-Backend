@@ -27,4 +27,22 @@ public class UserController {
         return new CommonResponse(OPERATION_SUCCESS,saveUser,SUCCESS_MESSAGE);
     }
 
+    @PutMapping(value = "/update",produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse updateUser(@RequestBody UserDTO userDTO) {
+        UserDTO saveUser = userService.updateUser(userDTO);
+        return new CommonResponse(OPERATION_SUCCESS,saveUser,SUCCESS_MESSAGE);
+    }
+
+    @DeleteMapping(value = "/delete/{userId}",produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse deleteUser(@PathVariable long userId) {
+        userService.deleteUser(userId);
+        return new CommonResponse(OPERATION_SUCCESS, null, SUCCESS_MESSAGE);
+    }
+
+    @GetMapping(value = "/get/{userId}",produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse getUserById(@PathVariable long userId) {
+        UserDTO userDTO = userService.getUserById(userId);
+        return new CommonResponse(OPERATION_SUCCESS, userDTO, SUCCESS_MESSAGE);
+    }
+
 }

@@ -62,6 +62,57 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserDTO updateUser(UserDTO userDTO) {
+        log.info("Updating user: {}", userDTO);
+
+        Optional<User> optionalUser = userRepository.findById(userDTO.getUserId());
+        if (optionalUser.isEmpty()) {
+            throw new CustomeException(404, "User not found");
+        }
+
+        User user = optionalUser.get();
+        user.setUserName(userDTO.getUserName());
+        user.setUserEmail(userDTO.getUserEmail());
+        user.setUserPhone(userDTO.getUserPhone());
+        user.setUserAddress(userDTO.getUserAddress());
+        user.setSupplierApprovalStatus(userDTO.getSupplierApprovalStatus());
+        user.setUserStatus(userDTO.getUserStatus());
+
+        User updatedUser = userRepository.save(user);
+        log.info("User updated successfully: {}", updatedUser);
+        return new UserDTO(updatedUser.getUserStringId(), updatedUser.getUserName(), updatedUser.getUserEmail(), null, updatedUser.getUserPhone(), updatedUser.getUserAddress(), updatedUser.getUserRole(), updatedUser.getSupplierApprovalStatus(), updatedUser.getUserStatus());
+    }
+
+    @Override
+    public void deleteUser(Long userId) {
+        log.info("Deleting user with ID: {}", userId);
+
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            throw new CustomeException(404, "User not found");
+        }
+
+        User user = optionalUser.get();
+        if (user.getUserRole() == Role.ADMIN) {
+            throw new CustomeException(403, "Cannot delete user with ADMIN role");
+        }
+        user.setUserStatus(UserStatus.DELETED);
+        userRepository.save(user);
+
+        log.info("User deleted successfully with ID: {}", userId);
+    }
+
+    @Override
+    public UserDTO getUserById(Long userId) {
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            throw new CustomeException(404, "User not found");
+        }
+        log.info("Retrieved user with ID: {}", convertToDTO(optionalUser.get()));
+        return convertToDTO(optionalUser.get());
+    }
+
+    @Override
     public UserDTO getUserDetails(String email, String password) {
         Optional<User> optionalUser = userRepository.findByUserEmail(email);
 
@@ -93,16 +144,13 @@ public class UserServiceImpl implements UserService {
     public UserDTO getUserByUsername(String username) {
         Optional<User> optionalUser = userRepository.findByUserName(username);
 
-        // ✅ 2. Check if user exists
         if (optionalUser.isEmpty()) {
             System.out.println("❌ User not found with username: " + username);
             return null;
         }
 
-        // ✅ 3. Get user
         User user = optionalUser.get();
 
-        // ✅ 4. Convert to DTO
         return convertToDTO(user);
     }
 
@@ -125,7 +173,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.countByUserEmail(email) > 0;
     }
 
-
     private UserDTO convertToDTO(User user) {
         UserDTO dto = new UserDTO();
         dto.setUserId(user.getUserId());
@@ -133,6 +180,7 @@ public class UserServiceImpl implements UserService {
         dto.setUserName(user.getUserName());
         dto.setUserEmail(user.getUserEmail());
         dto.setUserPhone(user.getUserPhone());
+        dto.setUserAddress(user.getUserAddress());
         dto.setUserRole(user.getUserRole());
         dto.setUserStatus(user.getUserStatus());
         dto.setSupplierApprovalStatus(user.getSupplierApprovalStatus());
