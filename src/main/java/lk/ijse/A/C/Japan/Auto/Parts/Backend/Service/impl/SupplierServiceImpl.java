@@ -23,6 +23,7 @@ public class SupplierServiceImpl implements SupplierService {
 
     private final SupplierRepository supplierRepository;
     private final UserRepository userRepository;
+    private final lk.ijse.A.C.Japan.Auto.Parts.Backend.Service.FileStorageService fileStorageService;
 
     @Override
     public SupplierDTO applyBecomeSupplier(Long userId, SupplierDTO dto) {
@@ -47,7 +48,16 @@ public class SupplierServiceImpl implements SupplierService {
         supplier.setSupplierBusinessName(businessName);
         supplier.setSupplierBusinessAddress(businessAddress);
         supplier.setSupplierContactNumber(contactNumber);
-        supplier.setRegistrationDocUrl(dto.getRegistrationDocUrl() != null ? dto.getRegistrationDocUrl() : "documents/registration_doc.pdf");
+
+        String docRef = dto.getBusinessRegistrationDocument() != null ? dto.getBusinessRegistrationDocument() : dto.getRegistrationDocUrl();
+        if (docRef != null && !docRef.trim().isEmpty()) {
+            supplier.setRegistrationDocUrl(docRef);
+            supplier.setBusinessRegistrationDocument(docRef);
+        } else if (supplier.getBusinessRegistrationDocument() == null && supplier.getRegistrationDocUrl() == null) {
+            supplier.setRegistrationDocUrl(null);
+            supplier.setBusinessRegistrationDocument(null);
+        }
+
         supplier.setSupplierStatus(SupplierStatus.PENDING);
         supplier.setRejectionReason(null);
         supplier.setCreatedAt(LocalDateTime.now());
@@ -55,6 +65,7 @@ public class SupplierServiceImpl implements SupplierService {
         Supplier saved = supplierRepository.save(supplier);
         return convertToDTO(saved);
     }
+
 
     @Override
     public SupplierDTO getSupplierStatus(Long userId) {
@@ -107,6 +118,34 @@ public class SupplierServiceImpl implements SupplierService {
     }
 
     @Override
+    public SupplierDTO applyToBeSupplierWithDocument(SupplierDTO dto, org.springframework.web.multipart.MultipartFile documentFile) {
+        if (dto.getUserId() == null) {
+            throw new CustomeException(400, "User ID is required");
+        }
+        if (documentFile == null || documentFile.isEmpty()) {
+            throw new CustomeException(400, "Business registration document is required.");
+        }
+
+        String businessName = dto.getSupplierBusinessName() != null ? dto.getSupplierBusinessName() : dto.getBusinessName();
+        if (businessName == null || businessName.trim().isEmpty()) {
+            throw new CustomeException(400, "Business name is required.");
+        }
+
+        // Store document securely
+        String storedDocPath = fileStorageService.storeSupplierDocument(documentFile);
+
+        try {
+            dto.setBusinessRegistrationDocument(storedDocPath);
+            dto.setRegistrationDocUrl(storedDocPath);
+            return applyBecomeSupplier(dto.getUserId(), dto);
+        } catch (Exception ex) {
+            // Clean up stored file if registration transaction fails to avoid orphaned files
+            fileStorageService.deleteSupplierDocument(storedDocPath);
+            throw ex;
+        }
+    }
+
+    @Override
     public SupplierDTO rejectSupplier(Long userId) {
         return rejectSupplier(userId, "Rejected by administrator");
     }
@@ -134,7 +173,19 @@ public class SupplierServiceImpl implements SupplierService {
         dto.setSupplierBusinessName(supplier.getSupplierBusinessName());
         dto.setSupplierBusinessAddress(supplier.getSupplierBusinessAddress());
         dto.setSupplierContactNumber(supplier.getSupplierContactNumber());
-        dto.setRegistrationDocUrl(supplier.getRegistrationDocUrl());
+
+        String doc = supplier.getBusinessRegistrationDocument() != null ? supplier.getBusinessRegistrationDocument() : supplier.getRegistrationDocUrl();
+        dto.setRegistrationDocUrl(doc);
+        dto.setBusinessRegistrationDocument(doc);
+
+        boolean hasDoc = doc != null && !doc.trim().isEmpty() && !doc.contains("documents/registration_doc.pdf");
+        dto.setHasBusinessDocument(hasDoc);
+        if (hasDoc) {
+            dto.setBusinessRegistrationDocumentUrl("/api/v1/admin/suppliers/" + supplier.getSupplierId() + "/business-document");
+        } else {
+            dto.setBusinessRegistrationDocumentUrl(null);
+        }
+
         dto.setSupplierStatus(supplier.getSupplierStatus());
         dto.setRejectionReason(supplier.getRejectionReason());
         dto.setApprovedAt(supplier.getApprovedAt());

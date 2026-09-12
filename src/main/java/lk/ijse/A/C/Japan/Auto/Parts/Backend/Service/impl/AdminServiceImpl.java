@@ -30,6 +30,7 @@ public class AdminServiceImpl implements AdminService {
     private final ProductRepository productRepository;
     private final SupplierService supplierService;
     private final AuctionService auctionService;
+    private final lk.ijse.A.C.Japan.Auto.Parts.Backend.Service.FileStorageService fileStorageService;
 
     @Override
     public AdminDashboardDTO getDashboardStats() {
@@ -85,6 +86,25 @@ public class AdminServiceImpl implements AdminService {
         Long userId = supplier != null && supplier.getUser() != null ? supplier.getUser().getUserId() : supplierId;
         return supplierService.rejectSupplier(userId, "Application rejected by administrator");
     }
+
+    @Override
+    public org.springframework.core.io.Resource getSupplierBusinessDocument(Long supplierId) {
+        Supplier supplier = supplierRepository.findById(supplierId)
+                .orElseGet(() -> supplierRepository.findByUser_UserId(supplierId)
+                        .orElseThrow(() -> new lk.ijse.A.C.Japan.Auto.Parts.Backend.Exception.CustomeException(404, "Supplier not found with ID: " + supplierId)));
+
+        String docRef = supplier.getBusinessRegistrationDocument();
+        if (docRef == null || docRef.trim().isEmpty()) {
+            docRef = supplier.getRegistrationDocUrl();
+        }
+
+        if (docRef == null || docRef.trim().isEmpty() || docRef.contains("documents/registration_doc.pdf")) {
+            throw new lk.ijse.A.C.Japan.Auto.Parts.Backend.Exception.CustomeException(404, "No business registration document found for supplier #" + supplierId);
+        }
+
+        return fileStorageService.loadSupplierDocumentAsResource(docRef);
+    }
+
 
     @Override
     public List<AuctionDTO> getPendingAuctions() {

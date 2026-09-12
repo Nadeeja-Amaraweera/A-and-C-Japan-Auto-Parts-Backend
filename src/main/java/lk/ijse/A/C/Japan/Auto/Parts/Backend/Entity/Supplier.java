@@ -27,6 +27,9 @@ public class Supplier {
     private String supplierContactNumber;
     private String registrationDocUrl;
 
+    @Column(name = "business_registration_document")
+    private String businessRegistrationDocument;
+
     @Enumerated(EnumType.STRING)
     private SupplierStatus supplierStatus = SupplierStatus.PENDING;
 

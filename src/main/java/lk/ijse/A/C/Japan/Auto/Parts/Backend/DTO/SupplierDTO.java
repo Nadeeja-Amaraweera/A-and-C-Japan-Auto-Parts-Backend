@@ -30,6 +30,13 @@ public class SupplierDTO {
     private String supplierContactNumber;
 
     private String registrationDocUrl;
+
+    @JsonAlias({"document", "businessDocument", "registrationDocument", "businessRegistrationDocumentPath"})
+    private String businessRegistrationDocument;
+
+    private Boolean hasBusinessDocument;
+    private String businessRegistrationDocumentUrl;
+
     private SupplierStatus supplierStatus;
     private String rejectionReason;
     private LocalDateTime approvedAt;
@@ -99,4 +106,37 @@ public class SupplierDTO {
     public void setEmail(String e) {
         this.userEmail = e;
     }
+
+    @JsonProperty("businessRegistrationDocument")
+    public String getBusinessRegistrationDocument() {
+        if (businessRegistrationDocument != null && !businessRegistrationDocument.isEmpty()) {
+            return businessRegistrationDocument;
+        }
+        return registrationDocUrl;
+    }
+
+    public void setBusinessRegistrationDocument(String doc) {
+        this.businessRegistrationDocument = doc;
+        if (this.registrationDocUrl == null || this.registrationDocUrl.isEmpty()) {
+            this.registrationDocUrl = doc;
+        }
+    }
+
+    @JsonProperty("hasBusinessDocument")
+    public Boolean getHasBusinessDocument() {
+        String doc = getBusinessRegistrationDocument();
+        return doc != null && !doc.trim().isEmpty() && !doc.contains("documents/registration_doc.pdf");
+    }
+
+    @JsonProperty("businessRegistrationDocumentUrl")
+    public String getBusinessRegistrationDocumentUrl() {
+        if (Boolean.TRUE.equals(getHasBusinessDocument())) {
+            Long id = supplierId != null ? supplierId : userId;
+            if (id != null) {
+                return "/api/v1/admin/suppliers/" + id + "/business-document";
+            }
+        }
+        return null;
+    }
 }
+

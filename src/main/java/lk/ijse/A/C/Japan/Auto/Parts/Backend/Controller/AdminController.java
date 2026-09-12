@@ -1,13 +1,18 @@
 package lk.ijse.A.C.Japan.Auto.Parts.Backend.Controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lk.ijse.A.C.Japan.Auto.Parts.Backend.Constant.CommonResponse;
 import lk.ijse.A.C.Japan.Auto.Parts.Backend.DTO.AdminDashboardDTO;
 import lk.ijse.A.C.Japan.Auto.Parts.Backend.DTO.AuctionDTO;
 import lk.ijse.A.C.Japan.Auto.Parts.Backend.DTO.SupplierDTO;
 import lk.ijse.A.C.Japan.Auto.Parts.Backend.Service.AdminService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 import java.util.List;
 
@@ -45,6 +50,45 @@ public class AdminController {
         SupplierDTO supplier = adminService.rejectSupplier(id);
         return new CommonResponse(OPERATION_SUCCESS, supplier, SUCCESS_MESSAGE);
     }
+
+    @GetMapping("/suppliers/{id}/business-document")
+    public ResponseEntity<Resource> getSupplierBusinessDocument(@PathVariable Long id, HttpServletRequest request) {
+        Resource resource = adminService.getSupplierBusinessDocument(id);
+
+        String contentType = null;
+        try {
+            if (resource.getFile() != null) {
+                contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
+            }
+        } catch (Exception ex) {
+            // fallback if getFile() is not accessible
+        }
+
+        if (contentType == null) {
+            String filename = resource.getFilename();
+            if (filename != null) {
+                String lower = filename.toLowerCase();
+                if (lower.endsWith(".pdf")) {
+                    contentType = "application/pdf";
+                } else if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) {
+                    contentType = "image/jpeg";
+                } else if (lower.endsWith(".png")) {
+                    contentType = "image/png";
+                }
+            }
+        }
+
+        if (contentType == null) {
+            contentType = "application/octet-stream";
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
+                .body(resource);
+    }
+
 
     @GetMapping(value = "/auctions/pending", produces = MediaType.APPLICATION_JSON_VALUE)
     public CommonResponse getPendingAuctions() {

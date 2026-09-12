@@ -11,6 +11,7 @@ public interface AdminService {
     List<SupplierDTO> getPendingSuppliers();
     SupplierDTO approveSupplier(Long supplierId);
     SupplierDTO rejectSupplier(Long supplierId);
+    org.springframework.core.io.Resource getSupplierBusinessDocument(Long supplierId);
     List<AuctionDTO> getPendingAuctions();
     AuctionDTO approveAuction(Long auctionId);
     AuctionDTO rejectAuction(Long auctionId);
