@@ -25,4 +25,5 @@ public class User {
     private String userAddress;
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
+    private Boolean supplierApprovalStatus = false;
 }

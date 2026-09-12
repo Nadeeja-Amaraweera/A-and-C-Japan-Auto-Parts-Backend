@@ -20,6 +20,7 @@ import static lk.ijse.A.C.Japan.Auto.Parts.Backend.Constant.ResponseStatusCode.O
 public class UserController {
 
     private final UserService userService;
+    private final lk.ijse.A.C.Japan.Auto.Parts.Backend.Service.SupplierService supplierService;
 
     @PostMapping(value = "/register",produces = MediaType.APPLICATION_JSON_VALUE)
     public CommonResponse registerUser(@RequestBody UserDTO userDTO) {
@@ -45,4 +46,22 @@ public class UserController {
         return new CommonResponse(OPERATION_SUCCESS, userDTO, SUCCESS_MESSAGE);
     }
 
+    @GetMapping(value = "/email/{email}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse getUserByEmail(@PathVariable String email) {
+        UserDTO userDTO = userService.getUserByEmail(email);
+        return new CommonResponse(OPERATION_SUCCESS, userDTO, SUCCESS_MESSAGE);
+    }
+
+    @PostMapping(value = "/{userId}/become-supplier", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse becomeSupplier(@PathVariable Long userId, @RequestBody lk.ijse.A.C.Japan.Auto.Parts.Backend.DTO.SupplierDTO supplierDTO) {
+        supplierDTO.setUserId(userId);
+        lk.ijse.A.C.Japan.Auto.Parts.Backend.DTO.SupplierDTO result = supplierService.applyToBeSupplier(supplierDTO);
+        return new CommonResponse(OPERATION_SUCCESS, result, SUCCESS_MESSAGE);
+    }
+
+    @GetMapping(value = "/{userId}/supplier-status", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse getSupplierStatus(@PathVariable Long userId) {
+        lk.ijse.A.C.Japan.Auto.Parts.Backend.DTO.SupplierDTO result = supplierService.getSupplierByUserId(userId);
+        return new CommonResponse(OPERATION_SUCCESS, result, SUCCESS_MESSAGE);
+    }
 }

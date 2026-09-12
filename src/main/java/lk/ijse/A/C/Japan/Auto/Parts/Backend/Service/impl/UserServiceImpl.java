@@ -5,6 +5,9 @@ import lk.ijse.A.C.Japan.Auto.Parts.Backend.Entity.User;
 import lk.ijse.A.C.Japan.Auto.Parts.Backend.Enumaration.Role;
 import lk.ijse.A.C.Japan.Auto.Parts.Backend.Enumaration.UserStatus;
 import lk.ijse.A.C.Japan.Auto.Parts.Backend.Exception.CustomeException;
+import lk.ijse.A.C.Japan.Auto.Parts.Backend.DTO.SupplierDTO;
+import lk.ijse.A.C.Japan.Auto.Parts.Backend.Entity.Supplier;
+import lk.ijse.A.C.Japan.Auto.Parts.Backend.Repository.SupplierRepository;
 import lk.ijse.A.C.Japan.Auto.Parts.Backend.Repository.UserRepository;
 import lk.ijse.A.C.Japan.Auto.Parts.Backend.Service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -22,9 +25,11 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
 
     private final UserRepository userRepository;
+    private final SupplierRepository supplierRepository;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, SupplierRepository supplierRepository) {
         this.userRepository = userRepository;
+        this.supplierRepository = supplierRepository;
     }
 
     @Override
@@ -57,7 +62,7 @@ public class UserServiceImpl implements UserService {
 
         User saveUser = userRepository.save(user);
         log.info("User saved successfully: {}", saveUser);
-        return new UserDTO( saveUser.getUserStringId(), saveUser.getUserName(), saveUser.getUserEmail(), null, saveUser.getUserPhone(), saveUser.getUserAddress(), saveUser.getUserRole(), saveUser.getUserStatus());
+        return convertToDTO(saveUser);
     }
 
     @Override
@@ -70,15 +75,38 @@ public class UserServiceImpl implements UserService {
         }
 
         User user = optionalUser.get();
-        user.setUserName(userDTO.getUserName());
-        user.setUserEmail(userDTO.getUserEmail());
-        user.setUserPhone(userDTO.getUserPhone());
-        user.setUserAddress(userDTO.getUserAddress());
-        user.setUserStatus(userDTO.getUserStatus());
+        if (userDTO.getUserName() != null && !userDTO.getUserName().trim().isEmpty()) {
+            user.setUserName(userDTO.getUserName().trim());
+        }
+        if (userDTO.getUserEmail() != null && !userDTO.getUserEmail().trim().isEmpty()) {
+            user.setUserEmail(userDTO.getUserEmail().trim());
+        }
+        if (userDTO.getUserPhone() != null) {
+            user.setUserPhone(userDTO.getUserPhone().trim());
+        }
+        if (userDTO.getUserAddress() != null) {
+            user.setUserAddress(userDTO.getUserAddress().trim());
+        }
+        if (userDTO.getUserStatus() != null) {
+            user.setUserStatus(userDTO.getUserStatus());
+        }
 
         User updatedUser = userRepository.save(user);
+
+        // If supplier information was provided and user is a supplier or applicant, sync supplier details
+        if (userDTO.getSupplier() != null) {
+            supplierRepository.findByUser_UserId(user.getUserId()).ifPresent(s -> {
+                SupplierDTO supDTO = userDTO.getSupplier();
+                if (supDTO.getSupplierBusinessName() != null) s.setSupplierBusinessName(supDTO.getSupplierBusinessName());
+                if (supDTO.getSupplierBusinessAddress() != null) s.setSupplierBusinessAddress(supDTO.getSupplierBusinessAddress());
+                if (supDTO.getSupplierContactNumber() != null) s.setSupplierContactNumber(supDTO.getSupplierContactNumber());
+                if (supDTO.getSupplierName() != null) s.setSupplierName(supDTO.getSupplierName());
+                supplierRepository.save(s);
+            });
+        }
+
         log.info("User updated successfully: {}", updatedUser);
-        return new UserDTO(updatedUser.getUserStringId(), updatedUser.getUserName(), updatedUser.getUserEmail(), null, updatedUser.getUserPhone(), updatedUser.getUserAddress(), updatedUser.getUserRole(),  updatedUser.getUserStatus());
+        return convertToDTO(updatedUser);
     }
 
     @Override
@@ -106,8 +134,9 @@ public class UserServiceImpl implements UserService {
         if (optionalUser.isEmpty()) {
             throw new CustomeException(404, "User not found");
         }
-        log.info("Retrieved user with ID: {}", convertToDTO(optionalUser.get()));
-        return convertToDTO(optionalUser.get());
+        UserDTO dto = convertToDTO(optionalUser.get());
+        log.info("Retrieved user with ID: {}", dto);
+        return dto;
     }
 
     @Override
@@ -124,17 +153,7 @@ public class UserServiceImpl implements UserService {
             throw new CustomeException(403, "Invalid email or password");
         }
 
-        return new UserDTO(
-                user.getUserId(),
-                user.getUserStringId(),
-                user.getUserName(),
-                user.getUserEmail(),
-                null,
-                user.getUserPhone(),
-                user.getUserAddress(),
-                user.getUserRole(),
-                user.getUserStatus()
-        );
+        return convertToDTO(user);
     }
 
     @Override
@@ -147,8 +166,16 @@ public class UserServiceImpl implements UserService {
         }
 
         User user = optionalUser.get();
-
         return convertToDTO(user);
+    }
+
+    @Override
+    public UserDTO getUserByEmail(String email) {
+        Optional<User> optionalUser = userRepository.findByUserEmail(email);
+        if (optionalUser.isEmpty()) {
+            return null;
+        }
+        return convertToDTO(optionalUser.get());
     }
 
     public String generateUserId() {
@@ -180,6 +207,29 @@ public class UserServiceImpl implements UserService {
         dto.setUserAddress(user.getUserAddress());
         dto.setUserRole(user.getUserRole());
         dto.setUserStatus(user.getUserStatus());
+
+        supplierRepository.findByUser_UserId(user.getUserId()).ifPresent(s -> {
+            dto.setSupplier(convertToSupplierDTO(s));
+        });
+        return dto;
+    }
+
+    private SupplierDTO convertToSupplierDTO(Supplier supplier) {
+        SupplierDTO dto = new SupplierDTO();
+        dto.setSupplierId(supplier.getSupplierId());
+        if (supplier.getUser() != null) {
+            dto.setUserId(supplier.getUser().getUserId());
+            dto.setUserEmail(supplier.getUser().getUserEmail());
+        }
+        dto.setSupplierName(supplier.getSupplierName());
+        dto.setSupplierBusinessName(supplier.getSupplierBusinessName());
+        dto.setSupplierBusinessAddress(supplier.getSupplierBusinessAddress());
+        dto.setSupplierContactNumber(supplier.getSupplierContactNumber());
+        dto.setRegistrationDocUrl(supplier.getRegistrationDocUrl());
+        dto.setSupplierStatus(supplier.getSupplierStatus());
+        dto.setRejectionReason(supplier.getRejectionReason());
+        dto.setApprovedAt(supplier.getApprovedAt());
+        dto.setCreatedAt(supplier.getCreatedAt());
         return dto;
     }
 }

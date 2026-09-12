@@ -30,6 +30,8 @@ public class AuthController {
         UserDataDTO userDataDTO = new UserDataDTO();
         userDataDTO.setUserId(userDetails.getUserId());
         userDataDTO.setUserName(userDetails.getUserName());
+        userDataDTO.setUserEmail(userDetails.getUserEmail());
+        userDataDTO.setUserRole(userDetails.getUserRole() != null ? userDetails.getUserRole().name() : "CUSTOMER");
         userDataDTO.setToken(token);
         return new CommonResponse(0, userDataDTO, "JWT Token generated successfully");
     }
@@ -52,7 +54,14 @@ public class AuthController {
 
             Map<String, Object> data = new HashMap<>();
             data.put("userId", user.getUserId());
+            data.put("id", user.getUserId());
             data.put("username", user.getUserName());
+            data.put("name", user.getUserName());
+            data.put("email", user.getUserEmail());
+            data.put("userEmail", user.getUserEmail());
+            data.put("role", user.getUserRole() != null ? user.getUserRole().name() : "CUSTOMER");
+            data.put("userRole", user.getUserRole() != null ? user.getUserRole().name() : "CUSTOMER");
+            data.put("token", token);
             data.put("expiresAt", jwtUtil.extractExpiration(token));
 
             return new CommonResponse(0, data, "Token is valid");
