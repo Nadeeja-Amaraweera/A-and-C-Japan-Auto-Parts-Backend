@@ -23,7 +23,6 @@ public class User {
     private String userEmail;
     private String userPhone;
     private String userAddress;
-    private Boolean supplierApprovalStatus;
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus;
 }

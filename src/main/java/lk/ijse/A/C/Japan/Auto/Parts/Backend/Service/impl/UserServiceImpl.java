@@ -53,12 +53,11 @@ public class UserServiceImpl implements UserService {
         user.setUserEmail(userDTO.getUserEmail());
         user.setUserPhone(userDTO.getUserPhone());
         user.setUserAddress(userDTO.getUserAddress());
-        user.setSupplierApprovalStatus(false);
         user.setUserStatus(UserStatus.ACTIVE);
 
         User saveUser = userRepository.save(user);
         log.info("User saved successfully: {}", saveUser);
-        return new UserDTO( saveUser.getUserStringId(), saveUser.getUserName(), saveUser.getUserEmail(), null, saveUser.getUserPhone(), saveUser.getUserAddress(), saveUser.getUserRole(), saveUser.getSupplierApprovalStatus(), saveUser.getUserStatus());
+        return new UserDTO( saveUser.getUserStringId(), saveUser.getUserName(), saveUser.getUserEmail(), null, saveUser.getUserPhone(), saveUser.getUserAddress(), saveUser.getUserRole(), saveUser.getUserStatus());
     }
 
     @Override
@@ -75,12 +74,11 @@ public class UserServiceImpl implements UserService {
         user.setUserEmail(userDTO.getUserEmail());
         user.setUserPhone(userDTO.getUserPhone());
         user.setUserAddress(userDTO.getUserAddress());
-        user.setSupplierApprovalStatus(userDTO.getSupplierApprovalStatus());
         user.setUserStatus(userDTO.getUserStatus());
 
         User updatedUser = userRepository.save(user);
         log.info("User updated successfully: {}", updatedUser);
-        return new UserDTO(updatedUser.getUserStringId(), updatedUser.getUserName(), updatedUser.getUserEmail(), null, updatedUser.getUserPhone(), updatedUser.getUserAddress(), updatedUser.getUserRole(), updatedUser.getSupplierApprovalStatus(), updatedUser.getUserStatus());
+        return new UserDTO(updatedUser.getUserStringId(), updatedUser.getUserName(), updatedUser.getUserEmail(), null, updatedUser.getUserPhone(), updatedUser.getUserAddress(), updatedUser.getUserRole(),  updatedUser.getUserStatus());
     }
 
     @Override
@@ -135,7 +133,6 @@ public class UserServiceImpl implements UserService {
                 user.getUserPhone(),
                 user.getUserAddress(),
                 user.getUserRole(),
-                user.getSupplierApprovalStatus(),
                 user.getUserStatus()
         );
     }
@@ -183,7 +180,6 @@ public class UserServiceImpl implements UserService {
         dto.setUserAddress(user.getUserAddress());
         dto.setUserRole(user.getUserRole());
         dto.setUserStatus(user.getUserStatus());
-        dto.setSupplierApprovalStatus(user.getSupplierApprovalStatus());
         return dto;
     }
 }
