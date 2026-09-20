@@ -15,4 +15,5 @@ public interface VehicleService {
     List<VehicleDTO> filterVehicles(String brand, String condition, String transmission, BigDecimal minPrice, BigDecimal maxPrice, Integer minYear, Integer maxYear);
     List<VehicleDTO> searchVehicles(String query);
     VehicleDTO addImageToVehicle(Long vehicleId, String imageUrl, Boolean isPrimary);
+    VehicleDTO convertToDTO(lk.ijse.A.C.Japan.Auto.Parts.Backend.Entity.Vehicle vehicle);
 }

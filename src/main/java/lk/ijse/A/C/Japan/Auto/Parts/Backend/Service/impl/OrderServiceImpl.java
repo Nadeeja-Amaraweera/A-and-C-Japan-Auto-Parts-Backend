@@ -2,11 +2,16 @@ package lk.ijse.A.C.Japan.Auto.Parts.Backend.Service.impl;
 
 import lk.ijse.A.C.Japan.Auto.Parts.Backend.DTO.OrderDTO;
 import lk.ijse.A.C.Japan.Auto.Parts.Backend.DTO.OrderItemDTO;
+import lk.ijse.A.C.Japan.Auto.Parts.Backend.DTO.VehicleDTO;
 import lk.ijse.A.C.Japan.Auto.Parts.Backend.Entity.*;
 import lk.ijse.A.C.Japan.Auto.Parts.Backend.Enumaration.*;
+import lk.ijse.A.C.Japan.Auto.Parts.Backend.Exception.CustomeException;
 import lk.ijse.A.C.Japan.Auto.Parts.Backend.Repository.*;
 import lk.ijse.A.C.Japan.Auto.Parts.Backend.Service.OrderService;
+import lk.ijse.A.C.Japan.Auto.Parts.Backend.Service.VehicleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +34,7 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final PaymentRepository paymentRepository;
+    private final VehicleService vehicleService;
 
     @Override
     public OrderDTO createOrderFromCart(Long userId, String shippingAddress, PaymentMethod paymentMethod) {
@@ -175,7 +181,26 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDTO getOrderById(Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found with id: " + orderId));
+                .orElseThrow(() -> new CustomeException(404, "Order not found with id: " + orderId));
+
+        // Security / User Ownership Check
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getName())) {
+            String currentUsername = authentication.getName();
+            User currentUser = userRepository.findByUserName(currentUsername)
+                    .or(() -> userRepository.findByUserEmail(currentUsername))
+                    .orElse(null);
+
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+
+            if (!isAdmin && currentUser != null) {
+                if (!order.getUser().getUserId().equals(currentUser.getUserId())) {
+                    throw new CustomeException(403, "Access denied: You do not have permission to view this order");
+                }
+            }
+        }
+
         return mapToDTO(order, null);
     }
 
@@ -196,7 +221,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDTO updateOrderStatus(Long orderId, OrderStatus status) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found with id: " + orderId));
+                .orElseThrow(() -> new CustomeException(404, "Order not found with id: " + orderId));
         order.setOrderStatus(status);
         order.setUpdatedAt(LocalDateTime.now());
         return mapToDTO(orderRepository.save(order), null);
@@ -227,6 +252,9 @@ public class OrderServiceImpl implements OrderService {
         dto.setCreatedAt(order.getCreatedAt());
         dto.setUpdatedAt(order.getUpdatedAt());
 
+        if (payment == null) {
+            payment = paymentRepository.findByOrder_OrderId(order.getOrderId()).orElse(null);
+        }
         if (payment != null) {
             dto.setPaymentMethod(payment.getPaymentMethod());
             dto.setPaymentStatus(payment.getPaymentStatus());
@@ -254,8 +282,21 @@ public class OrderServiceImpl implements OrderService {
                 }
             } else if (oi.getVehicle() != null) {
                 oiDto.setVehicleId(oi.getVehicle().getVehicleId());
-                if (oi.getVehicle().getImages() != null && !oi.getVehicle().getImages().isEmpty()) {
-                    oiDto.setImageUrl(oi.getVehicle().getImages().get(0).getImageUrl());
+                VehicleDTO vDto = vehicleService.convertToDTO(oi.getVehicle());
+                oiDto.setVehicle(vDto);
+                if (vDto != null && vDto.getImages() != null && !vDto.getImages().isEmpty()) {
+                    oiDto.setImageUrl(vDto.getImages().get(0));
+                } else if (vDto != null && vDto.getPrimaryImage() != null) {
+                    oiDto.setImageUrl(vDto.getPrimaryImage());
+                }
+            } else if (order.getAuction() != null && order.getAuction().getVehicle() != null) {
+                oiDto.setVehicleId(order.getAuction().getVehicle().getVehicleId());
+                VehicleDTO vDto = vehicleService.convertToDTO(order.getAuction().getVehicle());
+                oiDto.setVehicle(vDto);
+                if (vDto != null && vDto.getImages() != null && !vDto.getImages().isEmpty()) {
+                    oiDto.setImageUrl(vDto.getImages().get(0));
+                } else if (vDto != null && vDto.getPrimaryImage() != null) {
+                    oiDto.setImageUrl(vDto.getPrimaryImage());
                 }
             }
             return oiDto;
@@ -263,6 +304,19 @@ public class OrderServiceImpl implements OrderService {
 
         dto.setItems(itemDTOs);
         dto.setOrderItems(itemDTOs);
+
+        // Resolve primary vehicle for OrderDTO
+        VehicleDTO primaryVehicle = null;
+        for (OrderItemDTO oiDto : itemDTOs) {
+            if (oiDto.getVehicle() != null) {
+                primaryVehicle = oiDto.getVehicle();
+                break;
+            }
+        }
+        if (primaryVehicle == null && order.getAuction() != null && order.getAuction().getVehicle() != null) {
+            primaryVehicle = vehicleService.convertToDTO(order.getAuction().getVehicle());
+        }
+        dto.setVehicle(primaryVehicle);
 
         return dto;
     }

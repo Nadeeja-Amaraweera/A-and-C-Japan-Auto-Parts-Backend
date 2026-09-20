@@ -23,4 +23,5 @@ public class OrderItemDTO {
     private BigDecimal unitPrice;
     private BigDecimal totalPrice;
     private BigDecimal subtotal;
+    private VehicleDTO vehicle;
 }

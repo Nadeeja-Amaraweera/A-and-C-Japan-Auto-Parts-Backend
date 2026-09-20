@@ -37,6 +37,7 @@ public class OrderDTO {
     private String transactionId;
     private List<OrderItemDTO> items = new ArrayList<>();
     private List<OrderItemDTO> orderItems = new ArrayList<>();
+    private VehicleDTO vehicle;
     private LocalDateTime orderDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
