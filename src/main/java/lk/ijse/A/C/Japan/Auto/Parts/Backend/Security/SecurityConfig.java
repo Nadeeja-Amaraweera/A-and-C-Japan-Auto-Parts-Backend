@@ -76,6 +76,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
+
+                        // User-specific auction endpoints require authentication
+                        .requestMatchers("/api/v1/auctions/watchlist/**").authenticated()
+                        .requestMatchers("/api/v1/auctions/user/**").authenticated()
+                        // Public browsing of auctions, vehicles, products, categories
+                        .requestMatchers(HttpMethod.GET, "/api/v1/auctions/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/vehicles/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
 
                         // Admin only
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
