@@ -122,4 +122,21 @@ public class AdminServiceImpl implements AdminService {
     public AuctionDTO rejectAuction(Long auctionId) {
         return auctionService.rejectAuction(auctionId);
     }
+
+    @Override
+    public List<lk.ijse.A.C.Japan.Auto.Parts.Backend.DTO.UserDTO> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(u -> new lk.ijse.A.C.Japan.Auto.Parts.Backend.DTO.UserDTO(
+                        u.getUserId(),
+                        u.getUserStringId(),
+                        u.getUserName(),
+                        u.getUserEmail(),
+                        null,
+                        u.getUserPhone(),
+                        u.getUserAddress(),
+                        u.getUserRole(),
+                        u.getUserStatus()
+                ))
+                .collect(Collectors.toList());
+    }
 }

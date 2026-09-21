@@ -107,4 +107,10 @@ public class AdminController {
         AuctionDTO auction = adminService.rejectAuction(id);
         return new CommonResponse(OPERATION_SUCCESS, auction, SUCCESS_MESSAGE);
     }
+
+    @GetMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse getAllUsers() {
+        List<lk.ijse.A.C.Japan.Auto.Parts.Backend.DTO.UserDTO> users = adminService.getAllUsers();
+        return new CommonResponse(OPERATION_SUCCESS, users, SUCCESS_MESSAGE);
+    }
 }

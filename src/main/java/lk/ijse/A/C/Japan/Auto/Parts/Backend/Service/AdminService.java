@@ -15,4 +15,5 @@ public interface AdminService {
     List<AuctionDTO> getPendingAuctions();
     AuctionDTO approveAuction(Long auctionId);
     AuctionDTO rejectAuction(Long auctionId);
+    List<lk.ijse.A.C.Japan.Auto.Parts.Backend.DTO.UserDTO> getAllUsers();
 }
