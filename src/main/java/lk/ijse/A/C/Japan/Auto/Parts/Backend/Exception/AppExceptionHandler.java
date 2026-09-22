@@ -27,15 +27,12 @@ public class AppExceptionHandler {
         System.out.println("Message: " + ex.getMessage());
         System.out.println("========================================");
         ex.printStackTrace();
-        // Create error response
+
         CommonResponse response = new CommonResponse();
-        response.setStatus(1);  // Error
+        response.setStatus(1);
         response.setMessage(ex.getMessage());
         response.setBody(null);
 
-        // Return with correct HTTP status
         return ResponseEntity.status(statusCode).body(response);
-        // If statusCode = 409 → 409 Conflict
-        // If statusCode = 400 → 400 Bad Request
     }
 }
