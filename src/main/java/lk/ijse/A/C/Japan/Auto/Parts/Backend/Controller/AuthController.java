@@ -15,15 +15,15 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
-@CrossOrigin(origins = {"http://127.0.0.1:5500", "http://localhost:5500"})
+@CrossOrigin(origins = { "http://127.0.0.1:5500", "http://localhost:5500" })
 @RequiredArgsConstructor
 public class AuthController {
 
     private final UserService userService;
     private final JwtUtil jwtUtil;
 
-    @PostMapping(value = "/login",produces = MediaType.APPLICATION_JSON_VALUE)
-    public CommonResponse authLogin(@RequestBody AuthDTO authDTO){
+    @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse authLogin(@RequestBody AuthDTO authDTO) {
         UserDTO userDetails = userService.getUserDetails(authDTO.getUserEmail(), authDTO.getPassword());
         System.out.println("API called here");
         String token = jwtUtil.generateToken(userDetails);
